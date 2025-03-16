@@ -10,9 +10,9 @@ import (
 	"github.com/go-chi/chi/middleware"
 
 	"url-shortener/internal/config"
-	"url-shortener/internal/http-server/handlers/delete"
 	"url-shortener/internal/http-server/handlers/redirect"
-	"url-shortener/internal/http-server/handlers/save"
+	"url-shortener/internal/http-server/handlers/url/delete"
+	"url-shortener/internal/http-server/handlers/url/save"
 	"url-shortener/internal/storage/sqlite"
 )
 
@@ -45,9 +45,16 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
-	router.Post("/url", save.New(log, storage, cfg.RandomAliasLength))
+	router.Route("/url", func(r chi.Router) {
+		r.Use(middleware.BasicAuth("url-shortener", map[string]string{
+			cfg.HTTPServer.Username: cfg.HTTPServer.Password,
+		}))
+
+		r.Post("/", save.New(log, storage, cfg.RandomAliasLength))
+		r.Delete("/{alias}", delete.New(log, storage))
+	})
+
 	router.Get("/{alias}", redirect.New(log, storage))
-	router.Delete("/{alias}", delete.New(log, storage))
 
 	address := fmt.Sprintf("%s:%d", cfg.HTTPServer.Host, cfg.HTTPServer.Port)
 

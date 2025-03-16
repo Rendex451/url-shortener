@@ -32,7 +32,7 @@ type URLSaver interface {
 
 func New(log *slog.Logger, urlSaver URLSaver, randomAliasLength int) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.save.New"
+		const op = "handlers.url.save.New"
 
 		var req Request
 
