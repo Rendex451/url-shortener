@@ -1,0 +1,8 @@
+env: "local"  # local, dev, prod
+storage_path: "/home/rendex/Code/Golang_projects/url-shortener/storage/storage.db"
+http_server:
+  host: 127.0.0.1
+  port: 8080
+  timeout: 4s
+  idle_timeout: 60s
+  random_alias_length: 6
