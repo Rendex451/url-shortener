@@ -47,6 +47,7 @@ func (s *Storage) SaveURL(urlToSave string, alias string) (int64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
+	defer stmt.Close()
 
 	res, err := stmt.Exec(urlToSave, alias)
 	if err != nil {
@@ -73,6 +74,7 @@ func (s *Storage) GetURL(alias string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
+	defer stmt.Close()
 
 	var url string
 	err = stmt.QueryRow(alias).Scan(&url)
@@ -94,10 +96,20 @@ func (s *Storage) DeleteURL(alias string) error {
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
+	defer stmt.Close()
 
-	_, err = stmt.Exec(alias)
+	res, err := stmt.Exec(alias)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("%s: %w", op, storage.ErrUrlNotFound)
 	}
 
 	return nil
